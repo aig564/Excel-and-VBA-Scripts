@@ -1,0 +1,54 @@
+Option Explicit
+
+Sub Download_Attachments()
+Application.DisplayAlerts = False
+Dim sh As Worksheet
+Set sh = ThisWorkbook.Sheets("sheet1")
+
+Dim msg As Outlook.MailItem
+Dim fo As Outlook.Folder
+Dim at As Outlook.Attachment
+
+
+If sh.Range("G6").Value = "Inbox" Then
+    Set fo = Outlook.GetNamespace("MAPI").Folders("alfonzo.galvan@conns.com").Folders("Inbox")
+End If
+
+If sh.Range("G6").Value = "SSRS Reports" Then
+    Set fo = Outlook.GetNamespace("MAPI").Folders("alfonzo.galvan@conns.com").Folders("Inbox").Folders("SSRS Reports")
+End If
+
+If sh.Range("G6").Value = "Strategy and Analytics" Then
+    Set fo = Outlook.GetNamespace("MAPI").Folders("alfonzo.galvan@conns.com").Folders("Inbox").Folders("Strategy and Analytics")
+End If
+
+
+Dim lr As Integer
+
+For Each msg In fo.Items
+If VBA.InStr(msg.Subject, sh.Range("G2")) > 0 And msg.SentOn > sh.Range("G4") And VBA.InStr(msg.Subject, "External") = 0 And TypeName(msg) = "MailItem" Then
+
+lr = Application.WorksheetFunction.CountA(sh.Range("A:A"))
+
+sh.Range("A" & lr + 1).Value = msg.Subject
+sh.Range("B" & lr + 1).Value = msg.Attachments.Count
+
+For Each at In msg.Attachments
+    If VBA.InStr(at.Filename, sh.Range("G3")) > 0 Then
+        at.SaveAsFile sh.Range("G1").Value & "\" & Format(msg.SentOn, "YYYY-MM-dd") & sh.Range("G5").Value
+    End If
+
+Next
+
+MsgBox ("Done")
+
+End If
+
+
+
+
+Next
+
+
+
+End Sub
